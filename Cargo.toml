@@ -1,0 +1,46 @@
+[package]
+name = "photoflow"
+version = "0.1.0"
+edition = "2021"
+description = "A single-binary CLI for managing a personal photography library: dated folders, JPEG cleanup, Backblaze B2 backup, and export scaffolding."
+license = "MIT"
+
+# Library + binary live in one package. `main.rs` is clap dispatch only; all logic
+# lives in the library so it can be unit/integration tested without the binary.
+[lib]
+name = "photoflow"
+path = "src/lib.rs"
+
+[[bin]]
+name = "photoflow"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "1"
+directories = "6"
+shellexpand = "3"
+walkdir = "2"
+trash = "5"
+# v3 keeps the stable Entry/get_password API and per-platform backend feature flags.
+# crypto-rust gives the Linux secret-service backend a pure-Rust crypto impl (no OpenSSL/cmake).
+keyring = { version = "3", features = ["apple-native", "windows-native", "sync-secret-service", "crypto-rust"] }
+rpassword = "7"
+indicatif = "0.18"
+anyhow = "1"
+thiserror = "2"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
+
+# S3 / Backblaze B2. object_store uses rustls (ring) so it needs no cmake/OpenSSL.
+object_store = { version = "0.13", features = ["aws"] }
+# "signal" enables ctrl_c (cancel an in-flight sync); "time" enables sleep (retry backoff).
+tokio = { version = "1", features = ["rt", "rt-multi-thread", "macros", "fs", "io-util", "signal", "time"] }
+# Concurrent HEAD checks during the backup planning phase (buffer_unordered).
+futures = "0.3"
+
+[dev-dependencies]
+tempfile = "3"
